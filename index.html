@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الدراسات الإسلامية الكامل</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; }
+        .progress-transition { transition: width 0.4s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [step, setStep] = useState('start');
+            const [currentQ, setCurrentQ] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [feedback, setFeedback] = useState(false);
+
+            const questions = [
+                { q: "عدد أركان الإيمان:", opts: ["ستة", "ثلاثة", "خمسة"], ans: 0 },
+                { q: "الإيمان بالقرآن الكريم من الإيمان بـ:", opts: ["الملائكة", "الكتب", "اليوم الآخر"], ans: 1 },
+                { q: "الملائكة مخلوقات عظيمة خلقها الله من:", opts: ["نور", "طين", "نار"], ans: 0 },
+                { q: "الملائكة الموكلة بكتابة الأعمال هي:", opts: ["الحفظة عليهم السلام", "جبريل عليه السلام", "إسرافيل عليه السلام"], ans: 0 },
+                { q: "الإيمان بالجنة والنار من الإيمان بـ:", opts: ["الرسل", "الكتب", "اليوم الآخر"], ans: 2 },
+                { q: "حكم الإيمان بالملائكة:", opts: ["واجب", "سنة", "مستحب"], ans: 0 },
+                { q: "حديث (أن تؤمن بالله وملائكته...) دليل على أركان:", opts: ["الإسلام", "الإيمان", "الإحسان"], ans: 1 },
+                { q: "إفراد الله بالربوبية والألوهية والأسماء والصفات هو:", opts: ["الإيمان بالله", "إفراد الله بالربوبية", "إفراد الله بالألوهية"], ans: 0 },
+                { q: "صرف جميع أنواع العبادة لله وحده لا شريك له هو:", opts: ["إفراد الله بالربوبية", "إفراد الله بالألوهية", "إفراد الله بالأسماء"], ans: 1 },
+                { q: "من الأمثلة الدالة على إفراد الله بالربوبية:", opts: ["لا خالق إلا الله", "لا ندعو إلا الله", "لا نسجد إلا الله"], ans: 0 },
+                { q: "من الأمثلة الدالة على إفراد الله بالألوهية:", opts: ["لا خالق إلا الله", "لا يحيي الموتى إلا الله", "لا ندعو إلا الله"], ans: 2 },
+                { q: "من أعمال الملائكة النزول بالوحي وهو عمل:", opts: ["جبريل عليه السلام", "الحفظة عليهم السلام", "إسرافيل عليه السلام"], ans: 0 },
+                { q: "العلم بأن الله وحده هو الخالق الرازق المالك المدبر هو:", opts: ["إفراد الله بالألوهية", "إفراد الله بالأسماء", "إفراد الله بالربوبية"], ans: 2 },
+                { q: "أعظم آية في القرآن:", opts: ["الكرسي", "الفاتحة", "الإخلاص"], ans: 0 },
+                { q: "وردت آية الكرسي في سورة:", opts: ["الصف", "البقرة", "الشمس"], ans: 1 },
+                { q: "معنى كلمة (سنة):", opts: ["حزن", "نعاس", "تعب"], ans: 1 },
+                { q: "معنى كلمة (ولا يؤوده حفظهما):", opts: ["لا يتبعه حفظهما", "لا يشق عليه", "لا ينساهما"], ans: 1 },
+                { q: "قال تعالى (وقل رب زدني علما) تدل على:", opts: ["طلب الرحمة", "طلب العلم", "طلب المغفرة"], ans: 1 },
+                { q: "حكم الإيمان بالكتب:", opts: ["واجب", "سنة", "مستحب"], ans: 0 },
+                { q: "أنزل الله القرآن الكريم على:", opts: ["محمد ﷺ", "موسى عليه السلام", "عيسى عليه السلام"], ans: 0 }
+            ];
+
+            const handleSelect = (idx) => {
+                if (feedback) return;
+                setAnswers({...answers, [currentQ]: idx});
+                setFeedback(true);
+            };
+
+            const next = () => {
+                if (currentQ < questions.length - 1) {
+                    setCurrentQ(currentQ + 1);
+                    setFeedback(false);
+                } else {
+                    setStep('end');
+                }
+            };
+
+            const score = Object.keys(answers).filter(k => answers[k] === questions[k].ans).length;
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    {step === 'start' ? (
+                        <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-md w-full border-t-8 border-blue-600">
+                            <h1 className="text-3xl font-black text-slate-800 mb-6">اختبار الدراسات الإسلامية</h1>
+                            <p className="text-slate-600 mb-8">اختبار شامل يحتوي على 20 سؤالاً من ورقة العمل.</p>
+                            <button onClick={() => setStep('quiz')} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-xl shadow-lg hover:bg-blue-700 transition-all">ابدأ الآن</button>
+                        </div>
+                    ) : step === 'quiz' ? (
+                        <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden">
+                            <div className="bg-slate-100 h-2 w-full">
+                                <div className="bg-blue-600 h-full progress-transition" style={{width: `${((currentQ+1)/questions.length)*100}%`}}></div>
+                            </div>
+                            <div className="p-8">
+                                <div className="flex justify-between items-center mb-6">
+                                    <span className="bg-blue-100 text-blue-700 px-4 py-1 rounded-full font-bold text-sm">سؤال {currentQ + 1} / 20</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-8 leading-relaxed">{questions[currentQ].q}</h2>
+                                <div className="space-y-4">
+                                    {questions[currentQ].opts.map((opt, i) => {
+                                        let style = "w-full p-5 text-right rounded-2xl border-2 font-bold transition-all ";
+                                        if (feedback) {
+                                            if (i === questions[currentQ].ans) style += "border-green-500 bg-green-50 text-green-700";
+                                            else if (answers[currentQ] === i) style += "border-red-500 bg-red-50 text-red-700";
+                                            else style += "border-slate-100 text-slate-400";
+                                        } else {
+                                            style += "border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700";
+                                        }
+                                        return (
+                                            <button key={i} disabled={feedback} onClick={() => handleSelect(i)} className={style}>{opt}</button>
+                                        );
+                                    })}
+                                </div>
+                                {feedback && (
+                                    <button onClick={next} className="mt-8 w-full py-4 bg-slate-800 text-white rounded-2xl font-bold text-lg hover:bg-slate-900 shadow-xl">
+                                        {currentQ === 19 ? "عرض النتيجة" : "السؤال التالي"}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-md w-full border-t-8 border-green-500">
+                            <h2 className="text-3xl font-black mb-4">انتهى الاختبار!</h2>
+                            <div className="text-6xl font-black text-blue-600 my-8">%{Math.round((score/20)*100)}</div>
+                            <p className="text-xl font-bold text-slate-700 mb-8">لقد أجبت على {score} من أصل 20 سؤالاً.</p>
+                            <button onClick={() => window.location.reload()} className="w-full py-4 bg-slate-100 text-slate-800 rounded-2xl font-bold hover:bg-slate-200 transition-all">إعادة المحاولة</button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
+
