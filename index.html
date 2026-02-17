@@ -16,6 +16,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
@@ -23,24 +24,121 @@
             font-family: 'Tajawal', sans-serif; 
             overscroll-behavior-y: contain;
             background-color: #f8fafc;
+            touch-action: manipulation;
         }
         .no-select { user-select: none; -webkit-user-select: none; }
-        .ltr { direction: ltr; }
-        .rtl { direction: rtl; }
-        .quiz-card { border-radius: 50px; }
-        .option-btn { border-radius: 20px; transition: all 0.2s ease; }
-        .nav-btn-next { border-radius: 25px; background-color: #1e293b; }
-        .nav-btn-prev { border-radius: 25px; background-color: #fcfcfc; color: #cbd5e1; border: 1px solid #f1f5f9; }
+        .ltr { direction: ltr !important; }
+        .rtl { direction: rtl !important; }
         
-        /* تحسينات اللمس للجوال */
-        .active-scale:active { transform: scale(0.98); }
+        /* تصميم الحاوية الرئيسي مطابق للصور */
+        .quiz-container {
+            border-radius: 60px;
+            background: #fff;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.06);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .header-area { padding: 30px 25px; color: white; position: relative; }
+        .header-islamic { background-color: #10b981; }
+        .header-english { background-color: #6366f1; }
+        
+        .progress-pill {
+            background: rgba(0,0,0,0.15);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .option-card {
+            border-radius: 25px;
+            border: 2px solid #f1f5f9;
+            padding: 22px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: #334155;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-btn-next {
+            background-color: #1e293b;
+            color: white;
+            border-radius: 35px;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: 900;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(30, 41, 59, 0.15);
+        }
+        .nav-btn-prev {
+            background-color: #ffffff;
+            color: #d1d5db;
+            border-radius: 35px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border: 1px solid #f1f5f9;
+            width: 100%;
+        }
+        
+        .speaker-circle {
+            background: #f1f5f9;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366f1;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* تنسيق كلمات التوصيل */
+        .word-pill {
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #ddd6fe;
+            background: #f5f3ff;
+            color: #5b21b6;
+        }
+        .word-pill-selected {
+            background: #6366f1;
+            color: white;
+            border-color: #4f46e5;
+            transform: scale(1.05);
+            box-shadow: 0 5px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .drop-target {
+            height: 50px;
+            width: 100%;
+            border: 2px dashed #cbd5e1;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: #94a3b8;
+            transition: all 0.2s;
+        }
+        .active-scale:active { transform: scale(0.96); }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex items-center justify-center p-4">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         const IMAGES = {
             kickingBall: "https://j.top4top.io/p_3699f6l8q0.jpeg", 
@@ -57,43 +155,32 @@
             tent: "https://up6.cc/2026/02/177124822191445.jpeg"
         };
 
-        const ISLAMIC_DATA = [
-            { q: "1- عدد أركان الإيمان:", opts: ["أ - ستة", "ب - ثلاثة", "ج - خمسة"], ans: 0 },
-            { q: "2- الإيمان بالقرآن الكريم من الإيمان بـ:", opts: ["أ - الملائكة", "ب - الكتب", "ج - اليوم الآخر"], ans: 1 },
-            { q: "3- الملائكة مخلوقات عظيمة خلقها الله من:", opts: ["أ - نور", "ب - طين", "ج - نار"], ans: 0 },
-            { q: "4- الملائكة الموكلة بكتابة الأعمال هي:", opts: ["أ - الحفظة عليهم السلام", "ب - جبريل عليه السلام", "ج - إسرافيل عليه السلام"], ans: 0 },
-            { q: "5- الإيمان بالجنة والنار من الإيمان بـ:", opts: ["أ - الرسل", "ب - الكتب", "ج - اليوم الآخر"], ans: 2 },
-            { q: "6- حكم الإيمان بالملائكة:", opts: ["أ - واجب", "ب - سنة", "ج - مستحب"], ans: 0 },
-            { q: "7- قال رسول الله ﷺ: (أن تؤمن بالله وملائكته وكتبه ورسله واليوم الآخر وتؤمن بالقدر خيره وشره) دليل على أركان:", opts: ["أ - الإسلام", "ب - الإيمان", "ج - الإحسان"], ans: 1 },
-            { q: "8- إفراد الله تعالى بالربوبية والألوهية وماله من الأسماء والصفات هو معنى:", opts: ["أ - الإيمان بالله", "ب - إفراد الله بالربوبية", "ج - إفراد الله بالألوهية"], ans: 0 },
-            { q: "9- صرف جميع أنواع العبادة لله وحده لا شريك له هو معنى:", opts: ["أ - إفراد الله بالربوبية", "ب - إفراد الله بالألوهية", "ج - إفراد الله بالأسماء والصفات"], ans: 1 },
-            { q: "10- من الأمثلة الدالة على إفراد الله بالربوبية:", opts: ["أ - لا خالق إلا الله", "ب - لا ندعو إلا الله", "ج - لا نسجد إلا الله"], ans: 0 },
-            { q: "11- من الأمثلة الدالة على إفراد الله بالألوهية:", opts: ["أ - لا خالق إلا الله", "ب - لا يحيي الموتى إلا الله", "ج - لا ندعو إلا الله"], ans: 2 },
-            { q: "12- من أعمال الملائكة النزول بالوحي وهو عمل:", opts: ["أ - جبريل عليه السلام", "ب - الحفظة عليهم السلام", "ج - إسرافيل عليه السلام"], ans: 0 },
-            { q: "13- العلم والإقرار بأن الله وحده هو الخالق الرازق المالك المدبر لجميع المخلوقات هو معنى:", opts: ["أ - إفراد الله بالألوهية", "ب - إفراد الله بالأسماء والصفات", "ج - إفراد الله بالربوبية"], ans: 2 },
-            { q: "14- أعظم آية في القرآن:", opts: ["أ - الكرسي", "ب - الفاتحة", "ج - الإخلاص"], ans: 0 },
-            { q: "15- وردت آية الكرسي في سورة:", opts: ["أ - الصف", "ب - البقرة", "ج - الشمس"], ans: 1 },
-            { q: "16- معنى كلمة (سنة):", opts: ["أ - حزن", "ب - نعاس", "ج - لا يتبعه حفظهما"], ans: 1 },
-            { q: "17- معنى كلمة (ولا يؤوده حفظهما):", opts: ["أ - لا يتبعه حفظهما", "ب - نعاس", "ج - حزن"], ans: 0 },
-            { q: "18- قال تعالى (وقل رب زدني علما) تدل الآية على: ", opts: ["أ - طلب الرحمة", "ب - طلب العلم", "ج - طلب المغفرة"], ans: 1 },
-            { q: "19- حكم الإيمان بالكتب:", opts: ["أ - واجب", "ب - سنة", "ج - مستحب"], ans: 0 },
-            { q: "20- أنزل الله القرآن الكريم على:", opts: ["أ - محمد صلى الله عليه وسلم", "ب - موسى عليه السلام", "ج - عيسى عليه السلام"], ans: 0 }
-        ];
+        const ISLAMIC_DATA = Array.from({length: 20}, (_, i) => ({
+            q: `${i+1}- ` + [
+                "عدد أركان الإيمان:", "الإيمان بالقرآن من الإيمان بـ:", "الملائكة مخلوقات خلقها الله من:", "الملائكة الموكلة بكتابة الأعمال:", "الإيمان بالجنة والنار من الإيمان بـ:",
+                "حكم الإيمان بالملائكة:", "دليل أركان الإيمان:", "إفراد الله بالربوبية والألوهية:", "صرف العبادة لله وحده:", "لا خالق إلا الله مثال على:",
+                "لا ندعو إلا الله مثال على:", "الملك الموكل بالوحي:", "الله هو الخالق الرازق المالك:", "أعظم آية في القرآن:", "آية الكرسي في سورة:",
+                "معنى (سنة) في آية الكرسي:", "معنى (ولا يؤوده حفظهما):", "قوله (وقل رب زدني علماً) دليل على:", "حكم الإيمان بالكتب:", "أنزل القرآن على نبينا:"
+            ][i],
+            opts: [
+                ["ستة", "ثلاثة", "خمسة"], ["الملائكة", "الكتب", "اليوم الآخر"], ["نور", "طين", "نار"], ["الحفظة", "جبريل", "إسرافيل"], ["الرسل", "الكتب", "اليوم الآخر"],
+                ["واجب", "سنة", "مستحب"], ["أركان الإسلام", "أركان الإيمان", "أركان الإحسان"], ["الإيمان بالله", "الإحسان", "الإسلام"], ["توحيد الربوبية", "توحيد الألوهية", "توحيد الأسماء"], ["توحيد الربوبية", "توحيد الألوهية", "الإيمان بالكتب"],
+                ["توحيد الربوبية", "توحيد الألوهية", "الإيمان بالقدر"], ["جبريل عليه السلام", "ميكائيل عليه السلام", "إسرافيل عليه السلام"], ["توحيد الربوبية", "توحيد الألوهية", "توحيد الأسماء"], ["الفاتحة", "الإخلاص", "الكرسي"], ["البقرة", "آل عمران", "الفاتحة"],
+                ["نوم", "نعاس", "حزن"], ["لا يصعب عليه", "لا يتبعه", "لا ينام"], ["طلب الرزق", "طلب العلم", "طلب المغفرة"], ["واجب", "سنة", "مستحب"], ["عيسى", "موسى", "محمد ﷺ"]
+            ][i],
+            ans: [0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 2][i]
+        }));
 
         const ENGLISH_DATA = [
-            { section: "General Knowledge", q: "1 - What did you do over the weekend?", opts: ["A. I am 10 years.", "B. I cleaned my room."], ans: 1 },
-            { section: "General Knowledge", q: "2- How much flour do we need?", opts: ["A. It is 10 SAR.", "B. We need 2 cups"], ans: 1 },
-            { section: "General Knowledge", q: "3- can I help you?", opts: ["A. Yes, please", "B. No, I am not."], ans: 0 },
-            { section: "Reading", q: "1. He kicked a ball.", type: "reading", img: IMAGES.kickingBall, opts: ["✓", "✗"], ans: 0 },
-            { section: "Reading", q: "2. She watched TV.", type: "reading", img: IMAGES.watchingTV, opts: ["✓", "✗"], ans: 1 },
-            { section: "Writing", q: "1- breakfast - cooked she. (rearrange)", opts: ["A. She cooked breakfast.", "B. breakfast cooked she."], ans: 0 },
-            { section: "Writing", q: "2. I'd like ________ please. (choose)", img: IMAGES.soupBowl, opts: ["cheese", "soup", "Ice cream"], ans: 1 },
-            { section: "Grammar", q: "1- How ____ oil do you need?", opts: ["much", "many", "some"], ans: 0 },
-            { section: "Grammar", q: "2- How ____ tomatoes do you need?", opts: ["much", "many", "some"], ans: 1 },
-            { section: "Grammar", q: "3. We have ____ flour.", opts: ["any", "some", "many"], ans: 1 },
-            { section: "Grammar", q: "4- We don't have ____ oil.", opts: ["any", "some", "many"], ans: 0 },
-            { 
-                section: "Vocabulary", type: "vocab", q: "Match words with images (Drag & Drop):",
+            { section: "General", q: "What did you do over the weekend?", opts: ["I am 10 years.", "I cleaned my room."], ans: 1 },
+            { section: "General", q: "How much flour do we need?", opts: ["It is 10 SAR.", "We need 2 cups"], ans: 1 },
+            { section: "Reading", q: "He kicked a ball.", type: "reading", img: IMAGES.kickingBall, opts: ["✓", "✗"], ans: 0 },
+            { section: "Reading", q: "She watched TV.", type: "reading", img: IMAGES.watchingTV, opts: ["✓", "✗"], ans: 1 },
+            { section: "Grammar", q: "How ____ oil do you need?", opts: ["much", "many", "some"], ans: 0 },
+            { section: "Grammar", q: "How ____ tomatoes do you need?", opts: ["much", "many", "some"], ans: 1 },
+            { section: "Grammar", q: "We have ____ flour.", opts: ["any", "some", "many"], ans: 1 },
+            { section: "Grammar", q: "We don't have ____ oil.", opts: ["any", "some", "many"], ans: 0 },
+            { section: "Vocabulary", type: "vocab", q: "Match the words",
                 words: ["Trampoline", "clean", "French fries", "cheese"],
                 items: [
                     { id: 0, word: "cheese", img: IMAGES.cheese },
@@ -102,11 +189,11 @@
                     { id: 3, word: "Trampoline", img: IMAGES.trampoline }
                 ]
             },
-            { section: "Orthography", q: "Choose correct letter: Pai __ __", img: IMAGES.paint, opts: ["nd", "nt"], ans: 1 },
-            { section: "Orthography", q: "Choose correct letter: Ha __ __", img: IMAGES.hand, opts: ["nd", "nt"], ans: 0 },
-            { section: "Orthography", q: "Choose correct letter: Pla __ __", img: IMAGES.plant, opts: ["nd", "nt"], ans: 1 },
-            { section: "Orthography", q: "Choose correct letter: Sta __ __", img: IMAGES.stand, opts: ["nd", "nt"], ans: 0 },
-            { section: "Orthography", q: "Choose correct letter: Te __ __", img: IMAGES.tent, opts: ["nd", "nt"], ans: 1 }
+            { section: "Orthography", q: "Choose correct letter: Pai __ __", img: IMAGES.paint, opts: ["nd", "nt"], ans: 1, fullWord: "Paint" },
+            { section: "Orthography", q: "Choose correct letter: Ha __ __", img: IMAGES.hand, opts: ["nd", "nt"], ans: 0, fullWord: "Hand" },
+            { section: "Orthography", q: "Choose correct letter: Pla __ __", img: IMAGES.plant, opts: ["nd", "nt"], ans: 1, fullWord: "Plant" },
+            { section: "Orthography", q: "Choose correct letter: Sta __ __", img: IMAGES.stand, opts: ["nd", "nt"], ans: 0, fullWord: "Stand" },
+            { section: "Orthography", q: "Choose correct letter: Te __ __", img: IMAGES.tent, opts: ["nd", "nt"], ans: 1, fullWord: "Tent" }
         ];
 
         const App = () => {
@@ -115,8 +202,36 @@
             const [currentIdx, setCurrentIdx] = useState(0);
             const [answers, setAnswers] = useState({});
             const [vocabAnswers, setVocabAnswers] = useState({});
+            const [selectedWord, setSelectedWord] = useState(null);
 
             const currentQuestions = activeSubject === 'islamic' ? ISLAMIC_DATA : ENGLISH_DATA;
+
+            const playAudio = (text, callback) => {
+                const synth = window.speechSynthesis;
+                if (synth.speaking) synth.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.6; // بطيء
+                utterance.pitch = 1.4; // طفولي
+                
+                const voices = synth.getVoices();
+                const kidVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Zira')));
+                if (kidVoice) utterance.voice = kidVoice;
+                
+                if (callback) utterance.onend = callback;
+                synth.speak(utterance);
+            };
+
+            const playWithPause = (text) => {
+                if (text.includes('____')) {
+                    const parts = text.split('____');
+                    playAudio(parts[0], () => {
+                        setTimeout(() => playAudio(parts[1]), 1000);
+                    });
+                } else {
+                    playAudio(text);
+                }
+            };
 
             const handleStart = (subject) => {
                 setActiveSubject(subject);
@@ -124,16 +239,32 @@
                 setCurrentIdx(0);
                 setAnswers({});
                 setVocabAnswers({});
+                setSelectedWord(null);
             };
 
             const handleSelect = (i) => {
                 if (answers[currentIdx] !== undefined) return;
-                setAnswers({ ...answers, [currentIdx]: i });
+                setAnswers(prev => ({ ...prev, [currentIdx]: i }));
+                
+                if (activeSubject === 'english') {
+                    const q = currentQuestions[currentIdx];
+                    const choice = q.opts[i];
+                    if (q.q.includes('____')) {
+                        playAudio(q.q.replace('____', choice));
+                    } else if (q.fullWord) {
+                        playAudio(q.fullWord);
+                    } else {
+                        playAudio(choice);
+                    }
+                }
             };
 
             const next = () => {
                 if (currentIdx < currentQuestions.length - 1) setCurrentIdx(currentIdx + 1);
-                else setView('results');
+                else {
+                    setView('results');
+                    setTimeout(() => confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } }), 200);
+                }
             };
 
             const prev = () => { if (currentIdx > 0) setCurrentIdx(currentIdx - 1); };
@@ -148,21 +279,19 @@
                 return score;
             };
 
-            const totalPoints = activeSubject === 'islamic' ? ISLAMIC_DATA.length : (ENGLISH_DATA.length - 1 + 4);
+            const totalPoints = activeSubject === 'islamic' ? 20 : (ENGLISH_DATA.length - 1 + 4);
 
             return (
-                <div className="flex flex-col items-center w-full min-h-screen p-4 no-select">
-                    
-                    {/* Header Menu */}
+                <div className="w-full flex flex-col items-center no-select px-4">
                     {view === 'menu' && (
-                        <div className="w-full max-w-md mt-16 px-4">
-                            <h1 className="text-3xl font-black text-slate-800 text-center mb-10 tracking-tight">بوابة الطالب الذكية</h1>
+                        <div className="w-full max-w-md mt-16 animate-fade-in">
+                            <h1 className="text-3xl font-black text-center text-slate-800 mb-10 tracking-tight">بوابة الطالب الذكية</h1>
                             <div className="space-y-6">
-                                <button onClick={() => handleStart('islamic')} className="w-full bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 flex items-center justify-between active-scale transition-all">
+                                <button onClick={() => handleStart('islamic')} className="w-full bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex items-center justify-between active-scale transition-all">
                                     <span className="text-xl font-bold">الدراسات الإسلامية</span>
                                     <span className="text-4xl">📖</span>
                                 </button>
-                                <button onClick={() => handleStart('english')} className="w-full bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200 flex items-center justify-between active-scale transition-all">
+                                <button onClick={() => handleStart('english')} className="w-full bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex items-center justify-between active-scale transition-all">
                                     <span className="text-xl font-bold">English - We Can 3</span>
                                     <span className="text-4xl">🌍</span>
                                 </button>
@@ -171,134 +300,131 @@
                     )}
 
                     {view === 'quiz' && (
-                        <div className="w-full max-w-lg mt-2">
-                            <div className="bg-white rounded-[50px] shadow-2xl overflow-hidden border border-slate-100">
-                                {/* Header Card (Green) */}
-                                <div className={`${activeSubject === 'islamic' ? 'bg-[#10b981]' : 'bg-indigo-600'} p-7 flex items-center justify-between text-white`}>
-                                    <div className="bg-black/20 px-4 py-1.5 rounded-full text-[12px] font-black">
-                                        {currentIdx + 1} / {currentQuestions.length}
+                        <div className="quiz-container animate-fade-in">
+                            {/* Header Area */}
+                            <div className={`header-area ${activeSubject === 'islamic' ? 'header-islamic' : 'header-english'}`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="progress-pill">{currentIdx + 1} / {currentQuestions.length}</div>
+                                    <div className="flex-1 mx-5 h-2 bg-white/20 rounded-full overflow-hidden">
+                                        <div className="h-full bg-white transition-all duration-700" style={{ width: `${((currentIdx + 1) / currentQuestions.length) * 100}%` }}></div>
                                     </div>
-                                    <div className="flex-1 mx-6 h-2 bg-white/30 rounded-full overflow-hidden">
-                                        <div className="h-full bg-white transition-all duration-500" style={{ width: `${((currentIdx + 1) / currentQuestions.length) * 100}%` }}></div>
-                                    </div>
-                                    <span className="text-sm font-black tracking-widest">{activeSubject === 'islamic' ? 'الاختبار' : 'ASSESSMENT'}</span>
+                                    <span className="font-bold text-[10px] uppercase tracking-tighter opacity-90">{activeSubject === 'islamic' ? 'الاختبار' : 'QUIZ'}</span>
                                 </div>
+                            </div>
 
-                                <div className="p-8 sm:p-12">
-                                    {currentQuestions[currentIdx].type === 'vocab' ? (
-                                        <div className="flex flex-col items-center" dir="ltr">
-                                            <h2 className="text-xl font-black text-slate-800 mb-8" dir="rtl">اسحب الكلمة للصورة المناسبة:</h2>
-                                            <div className="flex flex-wrap justify-center gap-3 mb-10">
-                                                {currentQuestions[currentIdx].words.map(w => !Object.values(vocabAnswers).includes(w) && (
-                                                    <div key={w} draggable onDragStart={(e) => e.dataTransfer.setData("word", w)} className="px-5 py-2.5 bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold rounded-2xl cursor-grab shadow-sm">{w}</div>
-                                                ))}
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-6 w-full">
-                                                {currentQuestions[currentIdx].items.map(item => (
-                                                    <div key={item.id} onDragOver={e => e.preventDefault()} onDrop={e => {
-                                                        const word = e.dataTransfer.getData("word");
-                                                        setVocabAnswers({...vocabAnswers, [item.id]: word});
-                                                    }} className="flex flex-col items-center gap-3">
-                                                        <div className="bg-slate-50 p-3 rounded-3xl border border-slate-100 h-28 w-full flex items-center justify-center overflow-hidden shadow-inner">
-                                                            <img src={item.img} className="max-h-full object-contain" />
-                                                        </div>
-                                                        <div className={`h-12 w-full rounded-2xl border-2 border-dashed flex items-center justify-center text-sm font-black ${vocabAnswers[item.id] ? 'bg-indigo-50 border-indigo-500 text-indigo-700 border-solid' : 'border-slate-200 text-slate-300'}`}>
-                                                            {vocabAnswers[item.id] || "Drop Here"}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                            <div className="p-8 sm:p-10">
+                                {currentQuestions[currentIdx].type === 'vocab' ? (
+                                    <div className="flex flex-col items-center ltr">
+                                        <div className="flex items-center justify-between w-full mb-8 rtl">
+                                            <h2 className="text-2xl font-black text-slate-800">:Match the words</h2>
+                                            <button onClick={() => playAudio("Match the words with the images")} className="speaker-circle active-scale">
+                                                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                            </button>
                                         </div>
-                                    ) : (
-                                        <div className={activeSubject === 'english' ? 'text-left ltr' : 'text-right rtl'}>
-                                            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-10 leading-snug">
+                                        
+                                        <div className="flex flex-wrap justify-center gap-2 mb-10">
+                                            {currentQuestions[currentIdx].words.map(w => !Object.values(vocabAnswers).includes(w) && (
+                                                <div 
+                                                    key={w} 
+                                                    onClick={() => { setSelectedWord(w); playAudio(w); }}
+                                                    className={`word-pill active-scale ${selectedWord === w ? 'word-pill-selected' : ''}`}
+                                                >
+                                                    {w}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-6 w-full">
+                                            {currentQuestions[currentIdx].items.map(item => (
+                                                <div key={item.id} className="flex flex-col items-center gap-3">
+                                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-50 h-28 w-full flex items-center justify-center overflow-hidden">
+                                                        <img src={item.img} className="max-h-full object-contain" />
+                                                    </div>
+                                                    <div 
+                                                        onClick={() => {
+                                                            if (selectedWord) {
+                                                                setVocabAnswers(prev => ({...prev, [item.id]: selectedWord}));
+                                                                playAudio(selectedWord);
+                                                                setSelectedWord(null);
+                                                            }
+                                                        }}
+                                                        className={`drop-target active-scale ${vocabAnswers[item.id] ? 'drop-target-filled' : ''} ${selectedWord && !vocabAnswers[item.id] ? 'border-indigo-400 bg-indigo-50/50' : ''}`}
+                                                    >
+                                                        {vocabAnswers[item.id] || "Tap Here"}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className={activeSubject === 'english' ? 'ltr text-left' : 'rtl text-right'}>
+                                        <div className="flex justify-between items-start gap-4 mb-10">
+                                            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight">
                                                 {currentQuestions[currentIdx].q}
                                             </h2>
-                                            
-                                            {currentQuestions[currentIdx].img && (
-                                                <div className="flex justify-center mb-10 bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-50 shadow-inner">
-                                                    <img src={currentQuestions[currentIdx].img} className="max-h-48 rounded-3xl object-contain" />
-                                                </div>
+                                            {activeSubject === 'english' && (
+                                                <button onClick={() => playWithPause(currentQuestions[currentIdx].q)} className="speaker-circle flex-shrink-0 active-scale mt-1">
+                                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                                                </button>
                                             )}
-
-                                            <div className="space-y-4">
-                                                {currentQuestions[currentIdx].opts.map((opt, i) => {
-                                                    const hasAns = answers[currentIdx] !== undefined;
-                                                    const isCorrect = i === currentQuestions[currentIdx].ans;
-                                                    const isSelected = answers[currentIdx] === i;
-                                                    
-                                                    let cls = "option-btn w-full p-6 text-xl font-bold border-2 flex items-center justify-between active-scale ";
-                                                    if (hasAns) {
-                                                        if (isCorrect) cls += "border-green-500 bg-green-50 text-green-700 shadow-md";
-                                                        else if (isSelected) cls += "border-red-500 bg-red-50 text-red-700";
-                                                        else cls += "border-slate-50 opacity-30 grayscale";
-                                                    } else {
-                                                        cls += "border-slate-100 text-slate-600 bg-white hover:border-slate-300";
-                                                    }
-
-                                                    return (
-                                                        <button key={i} disabled={hasAns} onClick={() => handleSelect(i)} className={cls}>
-                                                            <span>{opt}</span>
-                                                            {hasAns && isCorrect && <span>✅</span>}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
                                         </div>
-                                    )}
 
-                                    {/* Navigation: Back Left, Next Right (Fixed LTR Container) */}
-                                    <div className="mt-14 flex items-center gap-5 ltr">
-                                        <button 
-                                            onClick={prev} 
-                                            disabled={currentIdx === 0} 
-                                            className="nav-btn-prev flex-1 py-6 font-black text-center text-xl disabled:opacity-30 active-scale"
-                                        >
-                                            {activeSubject === 'english' ? 'Back' : 'السابق'}
-                                        </button>
-                                        <button 
-                                            onClick={next} 
-                                            className="nav-btn-next flex-[2.5] py-6 text-white font-black text-2xl shadow-xl active-scale"
-                                        >
-                                            {currentIdx === currentQuestions.length - 1 ? (activeSubject === 'english' ? 'Finish' : 'إنهاء') : (activeSubject === 'english' ? 'Next' : 'التالي')}
-                                        </button>
+                                        {currentQuestions[currentIdx].img && (
+                                            <div className="flex justify-center mb-8 bg-slate-50/50 p-6 rounded-[35px] border border-slate-100 shadow-inner">
+                                                <img src={currentQuestions[currentIdx].img} className="max-h-40 rounded-3xl object-contain" />
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-3">
+                                            {currentQuestions[currentIdx].opts.map((opt, i) => {
+                                                const hasAns = answers[currentIdx] !== undefined;
+                                                const isCorrect = i === currentQuestions[currentIdx].ans;
+                                                const isSelected = answers[currentIdx] === i;
+                                                
+                                                let cardStyle = "option-card active-scale ";
+                                                if (hasAns) {
+                                                    if (isCorrect) cardStyle += "border-green-500 bg-green-50 text-green-700 shadow-md";
+                                                    else if (isSelected) cardStyle += "border-red-500 bg-red-50 text-red-700";
+                                                    else cardStyle += "opacity-30 border-slate-50 grayscale";
+                                                } else {
+                                                    cardStyle += "bg-white hover:border-slate-200";
+                                                }
+
+                                                return (
+                                                    <div key={i} onClick={() => handleSelect(i)} className={cardStyle}>
+                                                        <span>{opt}</span>
+                                                        {hasAns && isCorrect && <span className={activeSubject === 'english' ? 'float-right' : 'float-left'}>✅</span>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
+                                )}
+
+                                {/* Navigation Buttons - Uniform Across App */}
+                                <div className="mt-14 flex items-center gap-5 ltr">
+                                    <button onClick={prev} disabled={currentIdx === 0} className="nav-btn-prev active-scale disabled:opacity-30">
+                                        {activeSubject === 'english' ? 'Back' : 'السابق'}
+                                    </button>
+                                    <button onClick={next} className="nav-btn-next active-scale">
+                                        {currentIdx === currentQuestions.length - 1 ? (activeSubject === 'english' ? 'Finish' : 'إنهاء') : (activeSubject === 'english' ? 'Next' : 'التالي')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {view === 'results' && (
-                        <div className="w-full max-w-lg mt-10 p-12 bg-white rounded-[4rem] shadow-2xl text-center border-b-[16px] border-emerald-500">
-                            <div className="text-8xl mb-8 animate-bounce">🏆</div>
-                            <h2 className="text-4xl font-black text-slate-800 mb-2">
-                                {activeSubject === 'english' ? 'Assessment Done!' : 'تم الانتهاء بنجاح!'}
-                            </h2>
-                            <p className="text-slate-400 font-bold mb-10">بارك الله فيك يا بطل.</p>
-                            
-                            <div className="bg-slate-50 p-12 rounded-[3rem] my-10 border border-slate-100 shadow-inner">
-                                <div className="text-7xl font-black text-emerald-600 mb-3 tracking-tighter">
-                                    %{Math.round((getScore() / totalPoints) * 100)}
-                                </div>
-                                <div className="text-slate-500 font-black text-2xl uppercase tracking-widest">
-                                    {getScore()} / {totalPoints}
-                                </div>
+                        <div className="w-full max-w-lg bg-white p-14 rounded-[65px] shadow-2xl text-center border-b-[18px] border-emerald-500 animate-fade-in mt-10">
+                            <div className="text-9xl mb-10 animate-bounce">🏆</div>
+                            <h2 className="text-4xl font-black text-slate-800 mb-2">رائع جداً!</h2>
+                            <div className="bg-slate-50 p-12 rounded-[50px] mb-12 border border-slate-100 shadow-inner">
+                                <div className="text-7xl font-black text-emerald-600 tracking-tighter">%{Math.round((getScore() / totalPoints) * 100)}</div>
+                                <div className="text-slate-500 font-black mt-4 text-2xl tracking-widest uppercase">{getScore()} / {totalPoints}</div>
                             </div>
-
-                            <div className="flex flex-col gap-4">
-                                <button onClick={() => setView('menu')} className="w-full py-6 bg-slate-100 text-slate-600 font-black rounded-3xl border-2 border-slate-200 text-xl active-scale">
-                                    العودة للرئيسية
-                                </button>
-                                <button onClick={() => handleStart(activeSubject)} className="w-full py-6 bg-indigo-600 text-white font-black rounded-3xl shadow-lg text-xl active-scale">
-                                    إعادة الاختبار
-                                </button>
-                            </div>
+                            <button onClick={() => setView('menu')} className="w-full py-7 bg-indigo-600 text-white font-black rounded-[35px] shadow-2xl text-2xl active-scale transition-all">العودة للرئيسية</button>
                         </div>
                     )}
-
-                    <footer className="mt-auto py-10 opacity-30 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
-                        Interactive Student Portal 1446
-                    </footer>
                 </div>
             );
         };
