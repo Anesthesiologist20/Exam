@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,131 +23,149 @@
         body { 
             font-family: 'Tajawal', sans-serif; 
             overscroll-behavior-y: contain;
-            background-color: #f8fafc;
+            background-color: #fcfcfc;
             touch-action: manipulation;
+            margin: 0; padding: 0;
         }
         .no-select { user-select: none; -webkit-user-select: none; }
-        .ltr { direction: ltr !important; }
-        .rtl { direction: rtl !important; }
+        .ltr { direction: ltr !important; text-align: left !important; }
+        .rtl { direction: rtl !important; text-align: right !important; }
         
-        /* تصميم الحاوية الرئيسي مطابق للصور */
-        .quiz-container {
-            border-radius: 60px;
-            background: #fff;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.06);
-            overflow: hidden;
+        /* تطبيق بدون حواف جانبية - مظهر التطبيقات الأصلية */
+        .app-shell {
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
+            min-height: 100vh;
+            background: #fff;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.02);
         }
-        
-        .header-area { padding: 30px 25px; color: white; position: relative; }
-        .header-islamic { background-color: #10b981; }
-        .header-english { background-color: #6366f1; }
-        
-        .progress-pill {
-            background: rgba(0,0,0,0.15);
+
+        .app-header {
+            border-bottom-left-radius: 55px;
+            border-bottom-right-radius: 55px;
+            padding: 55px 25px 35px 25px;
+            color: white;
+            transition: all 0.3s;
+        }
+        .theme-islamic { background: linear-gradient(135deg, #10b981, #059669); }
+        .theme-english { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .theme-math { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .capsule-badge {
+            background: rgba(0,0,0,0.12);
             padding: 4px 14px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 900;
         }
 
-        .option-card {
-            border-radius: 25px;
+        .choice-item {
+            border-radius: 28px;
             border: 2px solid #f1f5f9;
             padding: 22px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             font-weight: 700;
             color: #334155;
-            transition: all 0.2s;
+            font-size: 19px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            background: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+        .choice-item:active { transform: scale(0.97); background-color: #f8fafc; }
 
-        .nav-btn-next {
+        /* أزرار التنقل مطابقة للصورة المرفقة */
+        .nav-holder {
+            position: fixed;
+            bottom: 0;
+            max-width: 500px;
+            width: 100%;
+            padding: 25px 25px 40px 25px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+        }
+        .btn-next-navy {
             background-color: #1e293b;
             color: white;
             border-radius: 35px;
-            padding: 20px;
+            padding: 22px;
             font-size: 24px;
             font-weight: 900;
-            width: 100%;
-            box-shadow: 0 8px 20px rgba(30, 41, 59, 0.15);
+            flex: 2.2;
+            box-shadow: 0 10px 25px rgba(30, 41, 59, 0.2);
         }
-        .nav-btn-prev {
-            background-color: #ffffff;
-            color: #d1d5db;
+        .btn-prev-light {
+            background-color: transparent;
+            color: #e2e8f0;
             border-radius: 35px;
-            padding: 20px;
-            font-size: 18px;
+            padding: 22px;
+            font-size: 20px;
             font-weight: 700;
-            border: 1px solid #f1f5f9;
-            width: 100%;
-        }
-        
-        .speaker-circle {
-            background: #f1f5f9;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6366f1;
-            border: 1px solid #e2e8f0;
+            flex: 1;
+            text-align: center;
         }
 
-        /* تنسيق كلمات التوصيل */
-        .word-pill {
-            padding: 10px 20px;
-            border-radius: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #ddd6fe;
-            background: #f5f3ff;
-            color: #5b21b6;
+        .audio-circle {
+            background: #f1f5f9;
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #6366f1; border: 1.5px solid #edf2f7;
         }
-        .word-pill-selected {
+
+        .word-tag {
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-weight: 800;
+            border: 2px solid #eef2f6;
+            background: #ffffff;
+            color: #4f46e5;
+        }
+        .word-tag-selected {
             background: #6366f1;
             color: white;
             border-color: #4f46e5;
-            transform: scale(1.05);
-            box-shadow: 0 5px 12px rgba(99, 102, 241, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(99, 102, 241, 0.2);
         }
 
-        .drop-target {
-            height: 50px;
-            width: 100%;
-            border: 2px dashed #cbd5e1;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 800;
-            color: #94a3b8;
-            transition: all 0.2s;
+        .drop-box {
+            height: 55px; width: 100%;
+            border: 2px dashed #e2e8f0;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 800; color: #cbd5e1;
         }
-        .active-scale:active { transform: scale(0.96); }
+        .drop-box-filled { border-style: solid; border-color: #6366f1; background: #eff6ff; color: #1e40af; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-up { animation: slideUp 0.4s ease-out forwards; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         const IMAGES = {
-            kickingBall: "https://j.top4top.io/p_3699f6l8q0.jpeg", 
-            watchingTV: "https://g.top4top.io/p_3699ay7by0.jpeg",
-            soupBowl: "https://l.top4top.io/p_3699x0n0i0.jpeg", 
             cheese: "https://up6.cc/2026/02/177124770938951.jpeg",
             fries: "https://up6.cc/2026/02/177124770941072.jpeg",
             clean: "https://up6.cc/2026/02/177124770943813.jpeg",
             trampoline: "https://up6.cc/2026/02/177124770945284.jpeg",
+            soup: "https://l.top4top.io/p_3699x0n0i0.jpeg",
+            kick: "https://j.top4top.io/p_3699f6l8q0.jpeg",
+            tv: "https://g.top4top.io/p_3699ay7by0.jpeg",
             paint: "https://up6.cc/2026/02/17712482217751.jpeg",
             hand: "https://up6.cc/2026/02/177124822183682.jpeg",
             plant: "https://up6.cc/2026/02/177124822187173.jpeg",
@@ -155,32 +173,42 @@
             tent: "https://up6.cc/2026/02/177124822191445.jpeg"
         };
 
-        const ISLAMIC_DATA = Array.from({length: 20}, (_, i) => ({
-            q: `${i+1}- ` + [
-                "عدد أركان الإيمان:", "الإيمان بالقرآن من الإيمان بـ:", "الملائكة مخلوقات خلقها الله من:", "الملائكة الموكلة بكتابة الأعمال:", "الإيمان بالجنة والنار من الإيمان بـ:",
-                "حكم الإيمان بالملائكة:", "دليل أركان الإيمان:", "إفراد الله بالربوبية والألوهية:", "صرف العبادة لله وحده:", "لا خالق إلا الله مثال على:",
-                "لا ندعو إلا الله مثال على:", "الملك الموكل بالوحي:", "الله هو الخالق الرازق المالك:", "أعظم آية في القرآن:", "آية الكرسي في سورة:",
-                "معنى (سنة) في آية الكرسي:", "معنى (ولا يؤوده حفظهما):", "قوله (وقل رب زدني علماً) دليل على:", "حكم الإيمان بالكتب:", "أنزل القرآن على نبينا:"
-            ][i],
-            opts: [
-                ["ستة", "ثلاثة", "خمسة"], ["الملائكة", "الكتب", "اليوم الآخر"], ["نور", "طين", "نار"], ["الحفظة", "جبريل", "إسرافيل"], ["الرسل", "الكتب", "اليوم الآخر"],
-                ["واجب", "سنة", "مستحب"], ["أركان الإسلام", "أركان الإيمان", "أركان الإحسان"], ["الإيمان بالله", "الإحسان", "الإسلام"], ["توحيد الربوبية", "توحيد الألوهية", "توحيد الأسماء"], ["توحيد الربوبية", "توحيد الألوهية", "الإيمان بالكتب"],
-                ["توحيد الربوبية", "توحيد الألوهية", "الإيمان بالقدر"], ["جبريل عليه السلام", "ميكائيل عليه السلام", "إسرافيل عليه السلام"], ["توحيد الربوبية", "توحيد الألوهية", "توحيد الأسماء"], ["الفاتحة", "الإخلاص", "الكرسي"], ["البقرة", "آل عمران", "الفاتحة"],
-                ["نوم", "نعاس", "حزن"], ["لا يصعب عليه", "لا يتبعه", "لا ينام"], ["طلب الرزق", "طلب العلم", "طلب المغفرة"], ["واجب", "سنة", "مستحب"], ["عيسى", "موسى", "محمد ﷺ"]
-            ][i],
-            ans: [0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 1, 0, 0, 2, 0, 1, 0, 1, 0, 2][i]
-        }));
+        const ISLAMIC_DATA = [
+            { q: "عدد أركان الإيمان:", opts: ["ستة", "ثلاثة", "خمسة"], ans: 0 },
+            { q: "الإيمان بالقرآن الكريم من الإيمان بـ:", opts: ["الملائكة", "الكتب", "اليوم الآخر"], ans: 1 },
+            { q: "الملائكة مخلوقات عظيمة خلقها الله من:", opts: ["نور", "طين", "نار"], ans: 0 },
+            { q: "الملائكة الموكلة بكتابة الأعمال هي:", opts: ["الحفظة عليهم السلام", "جبريل عليه السلام", "إسرافيل عليه السلام"], ans: 0 },
+            { q: "الإيمان بالجنة والنار من الإيمان بـ:", opts: ["الرسل", "الكتب", "اليوم الآخر"], ans: 2 },
+            { q: "حكم الإيمان بالملائكة:", opts: ["واجب", "سنة", "مستحب"], ans: 0 },
+            { q: "قوله ﷺ (أن تؤمن بالله وملائكته..) دليل على:", opts: ["أركان الإسلام", "أركان الإيمان", "أركان الإحسان"], ans: 1 },
+            { q: "إفراد الله بالربوبية والألوهية والأسماء والصفات:", opts: ["الإيمان بالله", "الإحسان", "الإسلام"], ans: 0 },
+            { q: "صرف جميع أنواع العبادة لله وحده لا شريك له:", opts: ["توحيد الربوبية", "توحيد الألوهية", "توحيد الأسماء"], ans: 1 },
+            { q: "من الأمثلة الدالة على توحيد الربوبية:", opts: ["لا خالق إلا الله", "لا ندعو إلا الله", "لا نسجد إلا الله"], ans: 0 },
+            { q: "من الأمثلة الدالة على توحيد الألوهية:", opts: ["لا خالق إلا الله", "لا يحيي الموتى إلا الله", "لا ندعو إلا الله"], ans: 2 },
+            { q: "من أعمال الملائكة النزول بالوحي وهو عمل:", opts: ["جبريل عليه السلام", "الحفظة", "إسرافيل"], ans: 0 },
+            { q: "الإقرار بأن الله هو الخالق الرازق المالك المدبر:", opts: ["توحيد الألوهية", "توحيد الأسماء", "توحيد الربوبية"], ans: 2 },
+            { q: "أعظم آية في القرآن الكريم هي:", opts: ["آية الكرسي", "سورة الفاتحة", "سورة الإخلاص"], ans: 0 },
+            { q: "وردت آية الكرسي في سورة:", opts: ["سورة الصف", "سورة البقرة", "سورة الشمس"], ans: 1 },
+            { q: "معنى كلمة (سنة) في آية الكرسي:", opts: ["حزن", "نعاس", "لا يتبعها حفظهما"], ans: 1 },
+            { q: "معنى كلمة (ولا يؤوده حفظهما):", opts: ["لا يصعب عليه", "نعاس", "حزن"], ans: 0 },
+            { q: "قال تعالى (وقل رب زدني علماً) تدل على:", opts: ["طلب الرحمة", "طلب العلم", "طلب المغفرة"], ans: 1 },
+            { q: "حكم الإيمان بالكتب السماوية:", opts: ["واجب", "سنة", "مستحب"], ans: 0 },
+            { q: "أنزل الله القرآن الكريم على نبينا:", opts: ["محمد ﷺ", "موسى عليه السلام", "عيسى عليه السلام"], ans: 0 }
+        ];
 
         const ENGLISH_DATA = [
-            { section: "General", q: "What did you do over the weekend?", opts: ["I am 10 years.", "I cleaned my room."], ans: 1 },
-            { section: "General", q: "How much flour do we need?", opts: ["It is 10 SAR.", "We need 2 cups"], ans: 1 },
-            { section: "Reading", q: "He kicked a ball.", type: "reading", img: IMAGES.kickingBall, opts: ["✓", "✗"], ans: 0 },
-            { section: "Reading", q: "She watched TV.", type: "reading", img: IMAGES.watchingTV, opts: ["✓", "✗"], ans: 1 },
-            { section: "Grammar", q: "How ____ oil do you need?", opts: ["much", "many", "some"], ans: 0 },
-            { section: "Grammar", q: "How ____ tomatoes do you need?", opts: ["much", "many", "some"], ans: 1 },
-            { section: "Grammar", q: "We have ____ flour.", opts: ["any", "some", "many"], ans: 1 },
-            { section: "Grammar", q: "We don't have ____ oil.", opts: ["any", "some", "many"], ans: 0 },
-            { section: "Vocabulary", type: "vocab", q: "Match the words",
+            { sec: "General", q: "What did you do over the weekend?", opts: ["I am 10 years.", "I cleaned my room."], ans: 1 },
+            { sec: "General", q: "How much flour do we need?", opts: ["It is 10 SAR.", "We need 2 cups"], ans: 1 },
+            { sec: "General", q: "Can I help you?", opts: ["Yes, please", "No, I am not."], ans: 0 },
+            { sec: "Reading", q: "He kicked a ball.", type: "reading", img: IMAGES.kick, opts: ["✓", "✗"], ans: 0 },
+            { sec: "Reading", q: "She watched TV.", type: "reading", img: IMAGES.tv, opts: ["✓", "✗"], ans: 1 },
+            { sec: "Writing", q: "breakfast - cooked she. (rearrange)", opts: ["She cooked breakfast.", "breakfast cooked she."], ans: 0 },
+            { sec: "Writing", q: "I'd like ________ please.", img: IMAGES.soup, opts: ["cheese", "soup", "Ice cream"], ans: 1 },
+            { sec: "Grammar", q: "How ____ oil do you need?", opts: ["much", "many", "some"], ans: 0 },
+            { sec: "Grammar", q: "How ____ tomatoes do you need?", opts: ["much", "many", "some"], ans: 1 },
+            { sec: "Grammar", q: "We have ____ flour.", opts: ["any", "some", "many"], ans: 1 },
+            { sec: "Grammar", q: "We don't have ____ oil.", opts: ["any", "some", "many"], ans: 0 },
+            { sec: "Vocab", type: "vocab", q: "Match the words",
                 words: ["Trampoline", "clean", "French fries", "cheese"],
                 items: [
                     { id: 0, word: "cheese", img: IMAGES.cheese },
@@ -189,240 +217,183 @@
                     { id: 3, word: "Trampoline", img: IMAGES.trampoline }
                 ]
             },
-            { section: "Orthography", q: "Choose correct letter: Pai __ __", img: IMAGES.paint, opts: ["nd", "nt"], ans: 1, fullWord: "Paint" },
-            { section: "Orthography", q: "Choose correct letter: Ha __ __", img: IMAGES.hand, opts: ["nd", "nt"], ans: 0, fullWord: "Hand" },
-            { section: "Orthography", q: "Choose correct letter: Pla __ __", img: IMAGES.plant, opts: ["nd", "nt"], ans: 1, fullWord: "Plant" },
-            { section: "Orthography", q: "Choose correct letter: Sta __ __", img: IMAGES.stand, opts: ["nd", "nt"], ans: 0, fullWord: "Stand" },
-            { section: "Orthography", q: "Choose correct letter: Te __ __", img: IMAGES.tent, opts: ["nd", "nt"], ans: 1, fullWord: "Tent" }
+            { sec: "Orth", q: "Choose correct letter: Pai __ __", img: IMAGES.paint, opts: ["nd", "nt"], ans: 1, full: "Paint" },
+            { sec: "Orth", q: "Ha __ __", img: IMAGES.hand, opts: ["nd", "nt"], ans: 0, full: "Hand" },
+            { sec: "Orth", q: "Pla __ __", img: IMAGES.plant, opts: ["nd", "nt"], ans: 1, full: "Plant" },
+            { sec: "Orth", q: "Sta __ __", img: IMAGES.stand, opts: ["nd", "nt"], ans: 0, full: "Stand" },
+            { sec: "Orth", q: "Te __ __", img: IMAGES.tent, opts: ["nd", "nt"], ans: 1, full: "Tent" }
+        ];
+
+        const MATH_DATA = [
+            { q: "الكل 10، والجزء 8. فما هو الجزء المفقود؟", type: "math", ans: "2" },
+            { q: "الكل 9، والجزء 3. فما هو الجزء المفقود؟", type: "math", ans: "6" },
+            { q: "كان هناك 9 حبات كرز، تم أكل 3 منها. كم بقي؟", type: "math", ans: "6" },
+            { q: "طبق فيه 6 حبات كرز، أكلت هند حبتين. كم بقي؟", type: "math", ans: "4" },
+            { q: "ناتج طرح: 8 - 3 =", type: "math", ans: "5" },
+            { q: "ناتج طرح: 7 - 7 =", type: "math", ans: "0" },
+            { q: "ناتج طرح: 12 - 4 =", type: "math", ans: "8" },
+            { q: "ناتج جمع: 9 + 4 =", type: "math", ans: "13" },
+            { q: "ناتج جمع: 3 + 9 =", type: "math", ans: "12" },
+            { q: "فيصل اشترى 7 قصص، وأخوه 3 قصص. المجموع؟", type: "math", ans: "10" }
         ];
 
         const App = () => {
             const [view, setView] = useState('menu');
-            const [activeSubject, setActiveSubject] = useState(null);
-            const [currentIdx, setCurrentIdx] = useState(0);
-            const [answers, setAnswers] = useState({});
-            const [vocabAnswers, setVocabAnswers] = useState({});
-            const [selectedWord, setSelectedWord] = useState(null);
+            const [sub, setSub] = useState(null);
+            const [idx, setIdx] = useState(0);
+            const [userAns, setUserAns] = useState({});
+            const [vAns, setVAns] = useState({});
+            const [selected, setSelected] = useState(null);
+            const [mInp, setMInp] = useState("");
 
-            const currentQuestions = activeSubject === 'islamic' ? ISLAMIC_DATA : ENGLISH_DATA;
+            const questions = sub === 'islamic' ? ISLAMIC_DATA : sub === 'math' ? MATH_DATA : ENGLISH_DATA;
 
-            const playAudio = (text, callback) => {
-                const synth = window.speechSynthesis;
-                if (synth.speaking) synth.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.6; // بطيء
-                utterance.pitch = 1.4; // طفولي
-                
-                const voices = synth.getVoices();
-                const kidVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Zira')));
-                if (kidVoice) utterance.voice = kidVoice;
-                
-                if (callback) utterance.onend = callback;
-                synth.speak(utterance);
+            const speak = (text, cb) => {
+                const s = window.speechSynthesis; if (s.speaking) s.cancel();
+                const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.6; u.pitch = 1.4;
+                const v = s.getVoices().find(x => x.lang.startsWith('en') && (x.name.includes('Samantha') || x.name.includes('Zira') || x.name.includes('Google')));
+                if (v) u.voice = v; if (cb) u.onend = cb; s.speak(u);
             };
 
-            const playWithPause = (text) => {
+            const speakQ = (text) => {
                 if (text.includes('____')) {
-                    const parts = text.split('____');
-                    playAudio(parts[0], () => {
-                        setTimeout(() => playAudio(parts[1]), 1000);
-                    });
-                } else {
-                    playAudio(text);
-                }
-            };
-
-            const handleStart = (subject) => {
-                setActiveSubject(subject);
-                setView('quiz');
-                setCurrentIdx(0);
-                setAnswers({});
-                setVocabAnswers({});
-                setSelectedWord(null);
+                    const [p1, p2] = text.split('____');
+                    speak(p1, () => setTimeout(() => speak(p2), 1000));
+                } else speak(text);
             };
 
             const handleSelect = (i) => {
-                if (answers[currentIdx] !== undefined) return;
-                setAnswers(prev => ({ ...prev, [currentIdx]: i }));
-                
-                if (activeSubject === 'english') {
-                    const q = currentQuestions[currentIdx];
-                    const choice = q.opts[i];
-                    if (q.q.includes('____')) {
-                        playAudio(q.q.replace('____', choice));
-                    } else if (q.fullWord) {
-                        playAudio(q.fullWord);
-                    } else {
-                        playAudio(choice);
-                    }
+                if (userAns[idx] !== undefined) return;
+                setUserAns({...userAns, [idx]: i});
+                if (sub === 'english') {
+                    const q = questions[idx];
+                    if (q.q.includes('____')) speak(q.q.replace('____', q.opts[i]));
+                    else speak(q.full || q.opts[i]);
                 }
             };
-
-            const next = () => {
-                if (currentIdx < currentQuestions.length - 1) setCurrentIdx(currentIdx + 1);
-                else {
-                    setView('results');
-                    setTimeout(() => confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } }), 200);
-                }
-            };
-
-            const prev = () => { if (currentIdx > 0) setCurrentIdx(currentIdx - 1); };
 
             const getScore = () => {
-                let score = 0;
-                currentQuestions.forEach((q, i) => {
+                let s = 0;
+                questions.forEach((q, i) => {
                     if (q.type === 'vocab') {
-                        q.items.forEach(item => { if (vocabAnswers[item.id] === item.word) score++; });
-                    } else { if (answers[i] === q.ans) score++; }
+                        q.items.forEach(it => { if (vAns[it.id] === it.word) s++; });
+                    } else if (sub === 'math') {
+                        if (userAns[i] == q.ans) s++;
+                    } else if (userAns[i] === q.ans) s++;
                 });
-                return score;
+                return s;
             };
 
-            const totalPoints = activeSubject === 'islamic' ? 20 : (ENGLISH_DATA.length - 1 + 4);
+            const totalScore = sub === 'islamic' ? 20 : sub === 'math' ? 10 : (ENGLISH_DATA.length - 1 + 4);
 
             return (
-                <div className="w-full flex flex-col items-center no-select px-4">
+                <div className="app-shell no-select">
                     {view === 'menu' && (
-                        <div className="w-full max-w-md mt-16 animate-fade-in">
-                            <h1 className="text-3xl font-black text-center text-slate-800 mb-10 tracking-tight">بوابة الطالب الذكية</h1>
-                            <div className="space-y-6">
-                                <button onClick={() => handleStart('islamic')} className="w-full bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex items-center justify-between active-scale transition-all">
+                        <div className="flex flex-col items-center px-8 pt-24 animate-up">
+                            <div className="w-24 h-24 bg-emerald-500 rounded-[2.5rem] flex items-center justify-center text-5xl mb-10 shadow-xl text-white">🎓</div>
+                            <h1 className="text-3xl font-black text-slate-800 mb-12 tracking-tight">بوابة الطالب الذكية</h1>
+                            <div className="w-full space-y-5">
+                                <button onClick={() => { setSub('islamic'); setIdx(0); setUserAns({}); setView('quiz'); }} className="w-full bg-white border-2 border-slate-100 p-8 rounded-[40px] shadow-sm flex items-center justify-between active:scale-95 transition-all">
                                     <span className="text-xl font-bold">الدراسات الإسلامية</span>
-                                    <span className="text-4xl">📖</span>
+                                    <span className="text-3xl">📖</span>
                                 </button>
-                                <button onClick={() => handleStart('english')} className="w-full bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 flex items-center justify-between active-scale transition-all">
-                                    <span className="text-xl font-bold">English - We Can 3</span>
-                                    <span className="text-4xl">🌍</span>
+                                <button onClick={() => { setSub('math'); setIdx(0); setUserAns({}); setView('quiz'); }} className="w-full bg-white border-2 border-slate-100 p-8 rounded-[40px] shadow-sm flex items-center justify-between active:scale-95 transition-all">
+                                    <span className="text-xl font-bold">الرياضيات</span>
+                                    <span className="text-3xl">🧮</span>
+                                </button>
+                                <button onClick={() => { setSub('english'); setIdx(0); setUserAns({}); setView('quiz'); }} className="w-full bg-white border-2 border-slate-100 p-8 rounded-[40px] shadow-sm flex items-center justify-between active:scale-95 transition-all">
+                                    <span className="text-xl font-bold">English Assessment</span>
+                                    <span className="text-3xl">🌍</span>
                                 </button>
                             </div>
                         </div>
                     )}
 
                     {view === 'quiz' && (
-                        <div className="quiz-container animate-fade-in">
-                            {/* Header Area */}
-                            <div className={`header-area ${activeSubject === 'islamic' ? 'header-islamic' : 'header-english'}`}>
+                        <>
+                            <div className={`app-header ${sub==='islamic'?'theme-islamic':sub==='math'?'theme-math':'theme-english'} animate-up`}>
                                 <div className="flex items-center justify-between">
-                                    <div className="progress-pill">{currentIdx + 1} / {currentQuestions.length}</div>
-                                    <div className="flex-1 mx-5 h-2 bg-white/20 rounded-full overflow-hidden">
-                                        <div className="h-full bg-white transition-all duration-700" style={{ width: `${((currentIdx + 1) / currentQuestions.length) * 100}%` }}></div>
+                                    <div className="capsule-badge">{idx + 1} / {questions.length}</div>
+                                    <div className="flex-1 mx-6 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                                        <div className="h-full bg-white transition-all duration-700" style={{ width: `${((idx + 1) / questions.length) * 100}%` }}></div>
                                     </div>
-                                    <span className="font-bold text-[10px] uppercase tracking-tighter opacity-90">{activeSubject === 'islamic' ? 'الاختبار' : 'QUIZ'}</span>
+                                    <span className="text-xs font-black tracking-widest uppercase">{sub==='islamic'?'الاختبار':sub==='math'?'الرياضيات':'QUIZ'}</span>
                                 </div>
                             </div>
 
-                            <div className="p-8 sm:p-10">
-                                {currentQuestions[currentIdx].type === 'vocab' ? (
-                                    <div className="flex flex-col items-center ltr">
-                                        <div className="flex items-center justify-between w-full mb-8 rtl">
+                            <div className="flex-1 px-8 pt-10 pb-32 overflow-y-auto animate-up">
+                                {questions[idx].type === 'vocab' ? (
+                                    <div className="ltr text-center">
+                                        <div className="flex items-center justify-between mb-8 rtl">
                                             <h2 className="text-2xl font-black text-slate-800">:Match the words</h2>
-                                            <button onClick={() => playAudio("Match the words with the images")} className="speaker-circle active-scale">
-                                                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                                            </button>
+                                            <button onClick={() => speak("Match the words with the images")} className="audio-circle active:scale-90 shadow-sm"><svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
                                         </div>
-                                        
-                                        <div className="flex flex-wrap justify-center gap-2 mb-10">
-                                            {currentQuestions[currentIdx].words.map(w => !Object.values(vocabAnswers).includes(w) && (
-                                                <div 
-                                                    key={w} 
-                                                    onClick={() => { setSelectedWord(w); playAudio(w); }}
-                                                    className={`word-pill active-scale ${selectedWord === w ? 'word-pill-selected' : ''}`}
-                                                >
-                                                    {w}
-                                                </div>
+                                        <div className="flex flex-wrap justify-center gap-3 mb-10">
+                                            {questions[idx].words.map(w => !Object.values(vAns).includes(w) && (
+                                                <button key={w} onClick={() => { setSelected(w); speak(w); }} className={`word-tag active:scale-95 transition-all ${selected === w ? 'word-tag-selected' : ''}`}>{w}</button>
                                             ))}
                                         </div>
-
                                         <div className="grid grid-cols-2 gap-6 w-full">
-                                            {currentQuestions[currentIdx].items.map(item => (
-                                                <div key={item.id} className="flex flex-col items-center gap-3">
-                                                    <div className="bg-slate-50 p-2 rounded-2xl border border-slate-50 h-28 w-full flex items-center justify-center overflow-hidden">
-                                                        <img src={item.img} className="max-h-full object-contain" />
-                                                    </div>
-                                                    <div 
-                                                        onClick={() => {
-                                                            if (selectedWord) {
-                                                                setVocabAnswers(prev => ({...prev, [item.id]: selectedWord}));
-                                                                playAudio(selectedWord);
-                                                                setSelectedWord(null);
-                                                            }
-                                                        }}
-                                                        className={`drop-target active-scale ${vocabAnswers[item.id] ? 'drop-target-filled' : ''} ${selectedWord && !vocabAnswers[item.id] ? 'border-indigo-400 bg-indigo-50/50' : ''}`}
-                                                    >
-                                                        {vocabAnswers[item.id] || "Tap Here"}
-                                                    </div>
+                                            {questions[idx].items.map(it => (
+                                                <div key={it.id} className="flex flex-col items-center gap-3">
+                                                    <div className="bg-white p-2 rounded-[2rem] border border-slate-50 h-32 w-full flex items-center justify-center shadow-inner overflow-hidden"><img src={it.img} className="max-h-full object-contain" /></div>
+                                                    <div onClick={() => { if(selected) { setVAns({...vAns, [it.id]: selected}); speak(selected); setSelected(null); }}} className={`drop-box active:scale-95 ${vAns[it.id] ? 'drop-box-filled' : ''}`}>{vAns[it.id] || "Tap Here"}</div>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
+                                ) : sub === 'math' ? (
+                                    <div className="text-center rtl px-4">
+                                        <h2 className="text-3xl font-black text-slate-800 mb-12 leading-tight">{questions[idx].q}</h2>
+                                        <input type="number" value={mInp} onChange={(e)=>setMInp(e.target.value)} placeholder="أجب هنا" className="w-full p-8 text-5xl font-black text-center bg-slate-50 border-4 border-slate-100 rounded-[35px] focus:border-orange-400 outline-none transition-all" />
+                                        <button onClick={()=>{setUserAns({...userAns, [idx]: mInp}); setMInp("");}} className="mt-10 bg-orange-500 text-white w-full py-7 rounded-[30px] font-black text-2xl shadow-xl active:scale-95 transition-all">تحقق من الإجابة</button>
+                                    </div>
                                 ) : (
-                                    <div className={activeSubject === 'english' ? 'ltr text-left' : 'rtl text-right'}>
+                                    <div className={sub === 'english' ? 'ltr' : 'rtl'}>
                                         <div className="flex justify-between items-start gap-4 mb-10">
-                                            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight">
-                                                {currentQuestions[currentIdx].q}
-                                            </h2>
-                                            {activeSubject === 'english' && (
-                                                <button onClick={() => playWithPause(currentQuestions[currentIdx].q)} className="speaker-circle flex-shrink-0 active-scale mt-1">
-                                                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                                                </button>
+                                            <h2 className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight">{questions[idx].q}</h2>
+                                            {sub === 'english' && (
+                                                <button onClick={() => speakQ(questions[idx].q)} className="audio-circle flex-shrink-0 mt-1 shadow-sm active:scale-90"><svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
                                             )}
                                         </div>
-
-                                        {currentQuestions[currentIdx].img && (
-                                            <div className="flex justify-center mb-8 bg-slate-50/50 p-6 rounded-[35px] border border-slate-100 shadow-inner">
-                                                <img src={currentQuestions[currentIdx].img} className="max-h-40 rounded-3xl object-contain" />
-                                            </div>
+                                        {questions[idx].img && (
+                                            <div className="flex justify-center mb-10 bg-slate-50 p-8 rounded-[40px] shadow-inner"><img src={questions[idx].img} className="max-h-44 rounded-3xl object-contain" /></div>
                                         )}
-
-                                        <div className="space-y-3">
-                                            {currentQuestions[currentIdx].opts.map((opt, i) => {
-                                                const hasAns = answers[currentIdx] !== undefined;
-                                                const isCorrect = i === currentQuestions[currentIdx].ans;
-                                                const isSelected = answers[currentIdx] === i;
-                                                
-                                                let cardStyle = "option-card active-scale ";
-                                                if (hasAns) {
-                                                    if (isCorrect) cardStyle += "border-green-500 bg-green-50 text-green-700 shadow-md";
-                                                    else if (isSelected) cardStyle += "border-red-500 bg-red-50 text-red-700";
-                                                    else cardStyle += "opacity-30 border-slate-50 grayscale";
-                                                } else {
-                                                    cardStyle += "bg-white hover:border-slate-200";
+                                        <div className="space-y-3 px-2">
+                                            {questions[idx].opts.map((opt, i) => {
+                                                const has = userAns[idx] !== undefined; const cor = i === questions[idx].ans; const sel = userAns[idx] === i;
+                                                let st = "choice-item ";
+                                                if (has) {
+                                                    if (cor) st += "border-green-500 bg-green-50 text-green-700 shadow-sm";
+                                                    else if (sel) st += "border-red-500 bg-red-50 text-red-700";
+                                                    else st += "opacity-30 border-slate-50 grayscale";
                                                 }
-
-                                                return (
-                                                    <div key={i} onClick={() => handleSelect(i)} className={cardStyle}>
-                                                        <span>{opt}</span>
-                                                        {hasAns && isCorrect && <span className={activeSubject === 'english' ? 'float-right' : 'float-left'}>✅</span>}
-                                                    </div>
-                                                );
+                                                return <div key={i} onClick={() => handleSelect(i)} className={st}><span>{opt}</span>{has && cor && <span>✅</span>}</div>;
                                             })}
                                         </div>
                                     </div>
                                 )}
-
-                                {/* Navigation Buttons - Uniform Across App */}
-                                <div className="mt-14 flex items-center gap-5 ltr">
-                                    <button onClick={prev} disabled={currentIdx === 0} className="nav-btn-prev active-scale disabled:opacity-30">
-                                        {activeSubject === 'english' ? 'Back' : 'السابق'}
-                                    </button>
-                                    <button onClick={next} className="nav-btn-next active-scale">
-                                        {currentIdx === currentQuestions.length - 1 ? (activeSubject === 'english' ? 'Finish' : 'إنهاء') : (activeSubject === 'english' ? 'Next' : 'التالي')}
-                                    </button>
-                                </div>
                             </div>
-                        </div>
+
+                            <div className="nav-holder ltr">
+                                <button onClick={() => idx > 0 && setIdx(idx-1)} disabled={idx === 0} className="btn-prev-light disabled:opacity-0">{sub === 'english' ? 'Back' : 'السابق'}</button>
+                                <button onClick={() => { if(idx < questions.length - 1) setIdx(idx+1); else { setView('results'); confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); }}} className="btn-next-navy active:scale-95">
+                                    {idx === questions.length - 1 ? (sub === 'english' ? 'Finish' : 'إنهاء') : (sub === 'english' ? 'Next' : 'التالي')}
+                                </button>
+                            </div>
+                        </>
                     )}
 
                     {view === 'results' && (
-                        <div className="w-full max-w-lg bg-white p-14 rounded-[65px] shadow-2xl text-center border-b-[18px] border-emerald-500 animate-fade-in mt-10">
+                        <div className="flex flex-col items-center px-10 pt-24 text-center animate-up">
                             <div className="text-9xl mb-10 animate-bounce">🏆</div>
-                            <h2 className="text-4xl font-black text-slate-800 mb-2">رائع جداً!</h2>
-                            <div className="bg-slate-50 p-12 rounded-[50px] mb-12 border border-slate-100 shadow-inner">
-                                <div className="text-7xl font-black text-emerald-600 tracking-tighter">%{Math.round((getScore() / totalPoints) * 100)}</div>
-                                <div className="text-slate-500 font-black mt-4 text-2xl tracking-widest uppercase">{getScore()} / {totalPoints}</div>
+                            <h2 className="text-4xl font-black text-slate-800 mb-2">ممتاز جداً!</h2>
+                            <p className="text-slate-400 font-bold mb-14">لقد أكملت المراجعة بنجاح يا بطل.</p>
+                            <div className="bg-slate-50 p-16 rounded-[60px] mb-12 border border-slate-100 shadow-inner w-full">
+                                <div className="text-8xl font-black text-emerald-600 tracking-tighter">%{Math.round((getScore() / totalScore) * 100)}</div>
+                                <div className="text-slate-400 font-bold mt-2">{getScore()} / {totalScore}</div>
                             </div>
-                            <button onClick={() => setView('menu')} className="w-full py-7 bg-indigo-600 text-white font-black rounded-[35px] shadow-2xl text-2xl active-scale transition-all">العودة للرئيسية</button>
+                            <button onClick={() => { setView('menu'); setUserAns({}); setVAns({}); }} className="w-full py-8 bg-indigo-600 text-white font-black rounded-[35px] shadow-2xl text-2xl active:scale-95 transition-all">القائمة الرئيسية</button>
                         </div>
                     )}
                 </div>
